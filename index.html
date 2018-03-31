@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>SocketWorker</title>
+  <style>
+    b {
+      color: #eee;
+      padding: 20px 10px;
+      font-size: 18px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font: 13px Helvetica, Arial;
+    }
+
+    form[name="queryandmessage"] {
+      background: #000;
+      padding: 3px;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      border: black
+    }
+
+    form[name="queryandmessage"] input {
+      position: fixed;
+      border: 0;
+      width: 90%;
+      margin-right: .5%;
+      left: 130px;
+      font-size: 18px;
+
+    }
+
+    form[name="queryandmessage"] button {
+      width: 9%;
+      background: rgb(130, 224, 255);
+      border: none;
+      padding: 10px;
+    }
+
+    #messages {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    #messages li {
+      padding: 5px 10px;
+    }
+
+    #messages li:nth-child(odd) {
+      background: #eee;
+    }
+  </style>
+</head>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+<script>
+  $(function () {
+    var socket = io();
+
+
+    $('form[name="queryandmessage"]').submit(function () {
+
+      if ($('#usernameinput').val()) {
+        $('#usernameinput').attr("disabled", true);
+
+        socket.emit('chat message', $('#usernameinput').val() + "|" + $('#query').val() + "|" + $('#m').val());
+        $('#query').val('');
+        $('#m').val('');
+
+      } else {
+        alert("You must set a user name!")
+      }
+
+
+      return false;
+    });
+    socket.removeAllListeners("got result");
+    socket.on('got result', function (msg) {
+      console.log(msg)
+      let imageArray = []
+      if(msg.result){
+      for(let i =0;i< msg.result.length;i++){
+        imageArray.push(`<img src=${msg.result[i]}>`)}
+      console.log(imageArray)
+      let username =`<div>User: ${msg.username}</div>`;
+      let message = ` <div>Message: ${msg.message}</div>`;
+      let output = imageArray.join("")
+      console.log(output)
+          $('#messages').append($('<li>').append(username+message+output));
+}else{
+  $('#messages').append($('<li>').text(msg));
+}
+    });
+  });
+</script>
+
+<body>
+  <ul id="messages"></ul>
+
+
+  <form action="" name="queryandmessage">
+    <b>User Name</b>:
+    <input id="usernameinput" autocomplete="off" required/>
+    <br>
+    <b>query:</b>
+    <input id="query" autocomplete="off" required/>
+    <br>
+    <b>message: </b>
+    <input id="m" autocomplete="off" required/>
+    <br>
+    <button>Send</button>
+  </form>
+</body>
+
+</html>
